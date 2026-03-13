@@ -1,18 +1,41 @@
-# 📚 Redux Book Catalog
+# 📚 Library Management System
 
-A React + Redux application for managing a book catalog with full CRUD operations and availability tracking.
+A modern library management application built with **React** and **Redux** for state management. This project demonstrates advanced Redux patterns including automated statistics calculation and data consistency checks.
 
-## 🎯 Features
+## 🌟 Features
 
-- **Add Books**: Add new books to the catalog with auto-generated IDs
-- **Remove Books**: Delete books (only if available)
-- **Update Information**: Modify book details (title, author, year)
-- **Toggle Availability**: Track book checkout status
-- **State Persistence**: Track last update timestamp
-- **Protection Logic**: Prevent deletion of checked-out books
+### Part 1: Books Management
 
-  ## 🚀 Getting Started
+- ✅ Add new books to the catalog
+- ✅ Update book information (title, author, year)
+- ✅ Remove books (only available ones)
+- ✅ Toggle book availability status
+- ✅ Automatic ID generation for books
+- ✅ Data validation and error handling
 
-### Prerequisites
+### Part 2: Readers & Lending System
 
-- Node.js 14+
+- ✅ Register new readers with name and email
+- ✅ Remove readers (only without borrowed books)
+- ✅ Lend books to registered readers
+- ✅ Return books from readers
+- ✅ Track which reader has which book
+- ✅ Prevent lending already borrowed books
+- ✅ Display borrower information on book cards
+
+### Part 3: Advanced Statistics
+
+- ✅ **Automatic statistics recalculation** after every action
+- ✅ Real-time metrics:
+  - Total books in catalog
+  - Available books
+  - Borrowed books
+  - Total registered readers
+  - Active readers (with borrowed books)
+  - Most popular author
+  - Books grouped by decade
+- ✅ **Data consistency checks**:
+  - Validates that available + borrowed = total books
+  - Verifies reader book counts match statistics
+  - Console warnings for inconsistencies
+- ✅ Beautiful animated statistics dashboard
