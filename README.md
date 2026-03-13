@@ -10,3 +10,9 @@ A React + Redux application for managing a book catalog with full CRUD operation
 - **Toggle Availability**: Track book checkout status
 - **State Persistence**: Track last update timestamp
 - **Protection Logic**: Prevent deletion of checked-out books
+
+  ## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 14+
