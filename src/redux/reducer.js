@@ -1,8 +1,3 @@
-/**
- * REDUCER (РЕДЬЮСЕР)
- * Расширенная версия с поддержкой читателей и операций выдачи/возврата книг
- */
-
 import {
   BOOK_ADD,
   BOOK_REMOVE,
@@ -15,21 +10,30 @@ import {
 } from "./actionTypes";
 
 import { initialBooks, initialReaders } from "../data/initialData";
+import { calculateStatistics } from "../utils/calculateStatistic";
 
 const initialState = {
   books: initialBooks,
   readers: initialReaders,
+  statistics: calculateStatistics(initialBooks, initialReaders),
   lastUpdated: new Date().toISOString(),
 };
 
 const booksReducer = (state = initialState, action) => {
+  let newState;
+
   switch (action.type) {
     case BOOK_ADD:
-      return {
+      newState = {
         ...state,
         books: [...state.books, action.payload],
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
 
     case BOOK_REMOVE: {
       const bookToRemove = state.books.find(
@@ -48,11 +52,16 @@ const booksReducer = (state = initialState, action) => {
         return state;
       }
 
-      return {
+      newState = {
         ...state,
         books: state.books.filter((book) => book.id !== action.payload),
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
     }
 
     case BOOK_UPDATE_INFO: {
@@ -65,7 +74,7 @@ const booksReducer = (state = initialState, action) => {
         return state;
       }
 
-      return {
+      newState = {
         ...state,
         books: state.books.map((book) => {
           if (book.id === id) {
@@ -77,15 +86,19 @@ const booksReducer = (state = initialState, action) => {
               year: updates.year !== undefined ? updates.year : book.year,
             };
           }
-
           return book;
         }),
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
     }
 
     case BOOK_TOGGLE_AVAILABILITY:
-      return {
+      newState = {
         ...state,
         books: state.books.map((book) => {
           if (book.id === action.payload) {
@@ -98,26 +111,24 @@ const booksReducer = (state = initialState, action) => {
         }),
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
 
-    // ============================================
-    // ДЕЙСТВИЯ ДЛЯ ЧИТАТЕЛЕЙ
-    // ============================================
-
-    /**
-     * ДОБАВЛЕНИЕ ЧИТАТЕЛЯ
-     */
     case READER_ADD:
-      return {
+      newState = {
         ...state,
         readers: [...state.readers, action.payload],
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
 
-    /**
-     * УДАЛЕНИЕ ЧИТАТЕЛЯ
-     *
-     * ПРОВЕРКА: Можно удалить только если нет взятых книг
-     */
     case READER_REMOVE: {
       const readerToRemove = state.readers.find(
         (reader) => reader.id === action.payload,
@@ -135,58 +146,45 @@ const booksReducer = (state = initialState, action) => {
         return state;
       }
 
-      return {
+      newState = {
         ...state,
         readers: state.readers.filter((reader) => reader.id !== action.payload),
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
     }
 
-    // ============================================
-    // ОПЕРАЦИИ ВЫДАЧИ/ВОЗВРАТА КНИГ
-    // ============================================
-
-    /**
-     * ВЫДАЧА КНИГИ ЧИТАТЕЛЮ
-     *
-     * Проверки:
-     * 1. Книга существует
-     * 2. Книга доступна (isAvailable: true)
-     * 3. Читатель существует
-     */
     case BOOK_LEND_TO_READER: {
       const { bookId, readerId } = action.payload;
 
-      // Поиск книги
       const book = state.books.find((b) => b.id === bookId);
       if (!book) {
         console.error(`Book with id ${bookId} not found`);
         return state;
       }
 
-      // Проверка доступности книги
       if (!book.isAvailable) {
         console.error(`Book "${book.title}" is already borrowed`);
         return state;
       }
 
-      // Поиск читателя
       const reader = state.readers.find((r) => r.id === readerId);
       if (!reader) {
         console.error(`Reader with id ${readerId} not found`);
         return state;
       }
 
-      // ВСЁ ОК - выполняем выдачу книги
       console.log(`✓ Book "${book.title}" lent to ${reader.name}`);
 
-      return {
+      newState = {
         ...state,
-        // Обновляем книгу - делаем недоступной
         books: state.books.map((b) =>
           b.id === bookId ? { ...b, isAvailable: false } : b,
         ),
-        // Обновляем читателя - добавляем книгу в список взятых
         readers: state.readers.map((r) =>
           r.id === readerId
             ? { ...r, borrowedBooks: [...r.borrowedBooks, bookId] }
@@ -194,34 +192,28 @@ const booksReducer = (state = initialState, action) => {
         ),
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
     }
 
-    /**
-     * ВОЗВРАТ КНИГИ ОТ ЧИТАТЕЛЯ
-     *
-     * Проверки:
-     * 1. Книга существует
-     * 2. Читатель существует
-     * 3. У читателя действительно есть эта книга
-     */
     case BOOK_RETURN_FROM_READER: {
       const { bookId, readerId } = action.payload;
 
-      // Поиск книги
       const book = state.books.find((b) => b.id === bookId);
       if (!book) {
         console.error(`Book with id ${bookId} not found`);
         return state;
       }
 
-      // Поиск читателя
       const reader = state.readers.find((r) => r.id === readerId);
       if (!reader) {
         console.error(`Reader with id ${readerId} not found`);
         return state;
       }
 
-      // Проверка - есть ли эта книга у читателя
       if (!reader.borrowedBooks.includes(bookId)) {
         console.error(
           `Reader "${reader.name}" doesn't have book "${book.title}"`,
@@ -229,16 +221,13 @@ const booksReducer = (state = initialState, action) => {
         return state;
       }
 
-      // ВСЁ ОК - выполняем возврат книги
       console.log(`✓ Book "${book.title}" returned by ${reader.name}`);
 
-      return {
+      newState = {
         ...state,
-        // Обновляем книгу - делаем доступной
         books: state.books.map((b) =>
           b.id === bookId ? { ...b, isAvailable: true } : b,
         ),
-        // Обновляем читателя - удаляем книгу из списка взятых
         readers: state.readers.map((r) =>
           r.id === readerId
             ? {
@@ -249,6 +238,11 @@ const booksReducer = (state = initialState, action) => {
         ),
         lastUpdated: new Date().toISOString(),
       };
+      newState.statistics = calculateStatistics(
+        newState.books,
+        newState.readers,
+      );
+      return newState;
     }
 
     default:

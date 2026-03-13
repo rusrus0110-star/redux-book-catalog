@@ -16,6 +16,7 @@ function App() {
   const readers = useSelector((state) => state.readers);
   const lastUpdated = useSelector((state) => state.lastUpdated);
   const dispatch = useDispatch();
+  const statistics = useSelector((state) => state.statistics);
 
   const [newBook, setNewBook] = useState({
     title: "",
@@ -128,6 +129,12 @@ function App() {
           <div className="last-updated">
             <strong>Last Updated:</strong>{" "}
             {new Date(lastUpdated).toLocaleString()}
+          </div>
+        )}
+        {statistics && (
+          <div className="statistics">
+            <strong>Statistics:</strong>{" "}
+            {`Total Books: ${statistics.totalBooks}, Available Books: ${statistics.availableBooks}, Total Readers: ${statistics.totalReaders}`}
           </div>
         )}
 
@@ -403,7 +410,6 @@ function App() {
         </section>
       </main>
 
-      {/* Футер */}
       <footer className="app-footer">
         <div className="footer-divider"></div>
         <p>📚 Library Management System</p>
